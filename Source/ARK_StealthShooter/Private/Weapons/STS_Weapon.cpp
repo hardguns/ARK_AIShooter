@@ -5,6 +5,7 @@
 #include "ARK_StealthShooter/ARK_StealthShooter.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystemComponent.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 ASTS_Weapon::ASTS_Weapon()
@@ -16,6 +17,21 @@ ASTS_Weapon::ASTS_Weapon()
 
 	ShotDistance = 10000.f;
 	ShotDamage = 20.f;
+	RoundsPerMinute = 600.f;
+	bDrawDebug = false;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_Weapon::StartFire()
+{
+	float FirstShotDelay = FMath::Max(0.f, LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds);
+	GetWorldTimerManager().SetTimer(TimerHandle_AutoFire, this, &ASTS_Weapon::Fire, TimeBetweenShots, true, FirstShotDelay);
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_Weapon::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_AutoFire);
 }
 
 void ASTS_Weapon::Fire()
@@ -34,6 +50,8 @@ void ASTS_Weapon::Fire()
 		QueryParams.AddIgnoredActor(MyOwner);
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
+
+		FVector ImpactPoint = TraceEnd;
 		
 		FHitResult Hit;
 		if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, WEAPON_COLLISION, QueryParams))
@@ -41,9 +59,35 @@ void ASTS_Weapon::Fire()
 			AActor* HitActor = Hit.GetActor();
 			UGameplayStatics::ApplyPointDamage(HitActor, ShotDamage, ShotDirection, Hit, MyOwner->GetInstigatorController(), this, WeaponDamageType);
 
-			DrawDebugLine(GetWorld(), EyeLocation, Hit.ImpactPoint, FColor::White, false, 1.f, 0, 1.f);
+			ImpactPoint = Hit.ImpactPoint;
+
+			if (IsValid(ImpactEffect))
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, ImpactPoint, Hit.ImpactNormal.Rotation());
+			}
+		}
+
+		if (IsValid(MuzzleEffect))
+		{
+			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, WeaponMesh, MuzzleSocketName);
+		}
+
+		if (IsValid(TraceEffect))
+		{
+			UParticleSystemComponent* TraceComponent = UGameplayStatics::SpawnEmitterAttached(TraceEffect, WeaponMesh, MuzzleSocketName);
+			if (IsValid(TraceComponent))
+			{
+				TraceComponent->SetVectorParameter(TraceTargetName, ImpactPoint);
+			}
+		}
+
+		if (bDrawDebug)
+		{
+			DrawDebugLine(GetWorld(), EyeLocation, ImpactPoint, FColor::White, false, 1.f, 0, 1.f);
 		}
 	}
+
+	LastFireTime = GetWorld()->TimeSeconds;
 }
 
 //--------------------------------------------------------------------------------------------------------------------s
@@ -51,4 +95,5 @@ void ASTS_Weapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	TimeBetweenShots = 60 / RoundsPerMinute;
 }

@@ -4,6 +4,7 @@
 #include "Character/STS_BaseCharacter.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Weapons/STS_Weapon.h"
+#include "Components/STS_HealthComponent.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 ASTS_BaseCharacter::ASTS_BaseCharacter()
@@ -13,6 +14,33 @@ ASTS_BaseCharacter::ASTS_BaseCharacter()
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
+	HealthComponent = CreateDefaultSubobject<USTS_HealthComponent>(TEXT("HealthComponent"));
+
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_BaseCharacter::StartMelee()
+{
+	if (bIsMeleeAttacking)
+	{
+		return;
+	}
+
+	if (IsValid(AnimInstance))
+	{
+		bIsMeleeAttacking = true;
+		GetMovementComponent()->StopMovementImmediately();
+		AnimInstance->Montage_Play(MeleeAttackMontage);
+	}
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_BaseCharacter::FinishMelee(UAnimMontage* AnimMontage, bool bIsInterrupted)
+{
+	if (AnimMontage == MeleeAttackMontage)
+	{
+		bIsMeleeAttacking = false;
+	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -20,7 +48,16 @@ void ASTS_BaseCharacter::StartFire()
 {
 	if (IsValid(CurrentWeapon))
 	{
-		CurrentWeapon->Fire();
+		CurrentWeapon->StartFire();
+	}
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_BaseCharacter::StopFire()
+{
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->StopFire();
 	}
 }
 
@@ -30,6 +67,18 @@ void ASTS_BaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	AttachWeaponToCharacter();
+
+	if (IsValid(HealthComponent))
+	{
+		HealthComponent->OnHealthChanged.AddDynamic(this, &ASTS_BaseCharacter::OnHealthChanged);
+		HealthComponent->OnDeath.AddDynamic(this, &ASTS_BaseCharacter::OnDeath);
+	}
+
+	AnimInstance = GetMesh()->GetAnimInstance();
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->OnMontageEnded.AddDynamic(this, &ASTS_BaseCharacter::FinishMelee);
+	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -44,5 +93,19 @@ void ASTS_BaseCharacter::AttachWeaponToCharacter()
 			CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponSocketName);
 		}
 	}
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_BaseCharacter::OnHealthChanged(USTS_HealthComponent* HealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_BaseCharacter::OnDeath(USTS_HealthComponent* HealthComp, class AController* InstigatedBy, AActor* Killer)
+{
+	StopFire();
+	GetMovementComponent()->StopMovementImmediately();
+	SetActorEnableCollision(false);
 }
 
