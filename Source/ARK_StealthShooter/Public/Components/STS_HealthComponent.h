@@ -24,6 +24,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
 
+	UFUNCTION(BlueprintCallable)
+	void Kill(AController* InstigatedBy, AActor* DamageCauser);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -39,4 +42,5 @@ protected:
 
 	UFUNCTION()
 	void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 };

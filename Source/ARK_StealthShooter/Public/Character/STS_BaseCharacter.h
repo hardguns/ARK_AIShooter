@@ -31,6 +31,9 @@ public:
 	void FinishMelee(UAnimMontage* AnimMontage, bool bIsInterrupted);
 
 	UFUNCTION(BlueprintCallable)
+	void DoMeleeAttack();
+
+	UFUNCTION(BlueprintCallable)
 	void StartFire();
 
 	UFUNCTION(BlueprintCallable)
@@ -49,6 +52,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
 	UAnimMontage* MeleeAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
+	FName MeleeAttackBoneName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
+	float MeleeAttackRange;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
+	TArray<TEnumAsByte<EObjectTypeQuery>> MeleeObjectTypes;
 
 	UPROPERTY(Transient)
 	UAnimInstance* AnimInstance;

@@ -5,6 +5,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Weapons/STS_Weapon.h"
 #include "Components/STS_HealthComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 //--------------------------------------------------------------------------------------------------------------------
 ASTS_BaseCharacter::ASTS_BaseCharacter()
@@ -40,6 +41,27 @@ void ASTS_BaseCharacter::FinishMelee(UAnimMontage* AnimMontage, bool bIsInterrup
 	if (AnimMontage == MeleeAttackMontage)
 	{
 		bIsMeleeAttacking = false;
+	}
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_BaseCharacter::DoMeleeAttack()
+{
+	const FVector MeleeAttackLocation = GetMesh()->GetSocketLocation(MeleeAttackBoneName);
+	const TArray<AActor*> ActorsToIgnore = { this };
+	TArray<AActor*> OutHitActors;
+
+	if (UKismetSystemLibrary::SphereOverlapActors(GetWorld(), MeleeAttackLocation, MeleeAttackRange, MeleeObjectTypes, AActor::StaticClass(), ActorsToIgnore, OutHitActors))
+	{
+		AActor* HitActor = OutHitActors[0];
+		if (IsValid(HitActor))
+		{
+			USTS_HealthComponent* HitActorHealthComponent = Cast<USTS_HealthComponent>(HitActor->GetComponentByClass(USTS_HealthComponent::StaticClass()));
+			if (IsValid(HitActorHealthComponent))
+			{
+				HitActorHealthComponent->Kill(GetController(), this);
+			}
+		}
 	}
 }
 

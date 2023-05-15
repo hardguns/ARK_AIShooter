@@ -26,6 +26,7 @@ void USTS_HealthComponent::BeginPlay()
 	}
 }
 
+//--------------------------------------------------------------------------------------------------------------------
 void USTS_HealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Damage <= 0.f || bDied)
@@ -41,4 +42,17 @@ void USTS_HealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damag
 		bDied = true;
 		OnDeath.Broadcast(this, InstigatedBy, DamageCauser);
 	}
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+void USTS_HealthComponent::Kill(AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (bDied)
+	{
+		return;
+	}
+
+	CurrentHealth = 0.f;
+	bDied = true;
+	OnDeath.Broadcast(this, InstigatedBy, DamageCauser);
 }
