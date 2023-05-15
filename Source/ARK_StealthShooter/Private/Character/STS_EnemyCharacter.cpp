@@ -2,4 +2,14 @@
 
 
 #include "Character/STS_EnemyCharacter.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
+//--------------------------------------------------------------------------------------------------------------------
+void ASTS_EnemyCharacter::SetEnemyStatus(ESTS_EnemyStatus NewEnemyStatus)
+{
+	const float Speed = EnemySpeedMap[NewEnemyStatus];
+	GetMovementComponent()->MaxWalkSpeed = Speed;
+
+	BP_SetEnemyStatus(NewEnemyStatus);
+}
