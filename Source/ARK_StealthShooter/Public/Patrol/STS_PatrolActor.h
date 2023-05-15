@@ -20,8 +20,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USplineComponent* PatrolSplineComponent;
 
+	UFUNCTION(BlueprintCallable)
 	FVector GetWorldLocationByIndex(const int32 Index) const;
 
+	UFUNCTION(BlueprintCallable)
 	int32 GetLastIndex() const;
 		 
 protected:

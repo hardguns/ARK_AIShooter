@@ -29,7 +29,7 @@ int32 ASTS_PatrolActor::GetLastIndex() const
 {
 	if (IsValid(PatrolSplineComponent))
 	{
-		PatrolSplineComponent->GetNumberOfSplinePoints();
+		return PatrolSplineComponent->GetNumberOfSplinePoints();
 	}
 
 	return INDEX_NONE;
