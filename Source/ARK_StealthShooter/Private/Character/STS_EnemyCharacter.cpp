@@ -9,7 +9,11 @@
 void ASTS_EnemyCharacter::SetEnemyStatus(ESTS_EnemyStatus NewEnemyStatus)
 {
 	const float Speed = EnemySpeedMap[NewEnemyStatus];
-	GetMovementComponent()->MaxWalkSpeed = Speed;
-
+	UCharacterMovementComponent* MovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
+	if (IsValid(MovementComponent))
+	{
+		MovementComponent->MaxWalkSpeed = Speed;
+	}
+	
 	BP_SetEnemyStatus(NewEnemyStatus);
 }
