@@ -25,6 +25,9 @@ public:
 	FOnDeath OnDeath;
 
 	UFUNCTION(BlueprintCallable)
+	void Heal(const float HealAmount, AController* InstigatedBy, AActor* HealCauser);
+
+	UFUNCTION(BlueprintCallable)
 	void Kill(AController* InstigatedBy, AActor* DamageCauser);
 
 protected:

@@ -18,9 +18,6 @@ public:
 
 	ASTS_BaseCharacter();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USTS_HealthComponent* HealthComponent;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Melee")
 	bool bIsMeleeAttacking;
 
@@ -39,7 +36,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopFire();
 
+	USTS_HealthComponent* GetHealthComponent() const { return HealthComponent; }
+
 protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USTS_HealthComponent* HealthComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<ASTS_Weapon> StartingWeaponClass;
